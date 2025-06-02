@@ -1,0 +1,42 @@
+{
+  "name": "ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@biconomy/abstractjs": "^1.0.13",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@mui/icons-material": "^7.1.0",
+    "@mui/material": "^7.1.0",
+    "@mui/styled-engine-sc": "^7.1.0",
+    "@web3auth/base": "^9.7.0",
+    "@web3auth/ethereum-provider": "^9.7.0",
+    "@web3auth/modal": "^10.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.6.1",
+    "styled-components": "^6.1.18",
+    "typescript": "^5.8.3",
+    "viem": "^2.30.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "typescript-eslint": "^8.24.1",
+    "vite": "^6.2.0"
+  }
+}
