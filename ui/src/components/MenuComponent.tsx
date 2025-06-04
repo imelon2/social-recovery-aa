@@ -5,10 +5,10 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-type IPages = 'AA' | 'Pricing' | 'mpc-aa'
+type IPages = 'AA' | 'aa-with-pm' | 'mpc-aa'
 type ISettings = 'Profile' | 'Account' | 'Dashboard' | 'Logout'
 
-const pages: IPages[] = ['AA', 'Pricing', 'mpc-aa'];
+const pages: IPages[] = ['AA', 'aa-with-pm', 'mpc-aa'];
 const settings: ISettings[] = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 
@@ -30,8 +30,8 @@ function MenuComponent() {
       case "mpc-aa":
         navigate("/mpc-aa");
         break;
-      case "Pricing":
-        navigate("/null");
+      case "aa-with-pm":
+        navigate("/aa-with-pm");
         break;
       case "AA":
         navigate("/aa");
@@ -69,7 +69,7 @@ function MenuComponent() {
               textDecoration: 'none',
             }}
           >
-            LOGO
+            AA&Web3Auth
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -136,7 +136,7 @@ function MenuComponent() {
               </Button>
             ))}
           </Box>
-          <Box sx={{ flexGrow: 0 }}>
+          <Box sx={{ flexGrow: 0 }} display={"none"}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />

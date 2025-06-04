@@ -2,18 +2,22 @@ import {
   createPublicClient,
   createWalletClient,
   custom,
+  decodeFunctionResult,
+  encodeFunctionData,
   formatEther,
   http,
+  parseAbi,
   parseEther,
   PublicClient,
 } from "viem";
 import { arbitrumSepolia } from "viem/chains";
 import {
+  createBicoPaymasterClient,
   createSmartAccountClient,
   NexusClient,
   toNexusAccount,
 } from "@biconomy/abstractjs";
-import { BUNDLER_URL } from "../config/aaContextConfig";
+import { BICONOMY_PAYMASTER_ADDRESS, BICONOMY_PAYMASTER_DEPOSIT_ADDRESS, BUNDLER_URL, PAYMASTER_URL } from "../config/aaContextConfig";
 import AddressComponent from "../components/AddressComponent";
 import { useState } from "react";
 import { IAddressComponentProps } from "../libs/types";
@@ -26,35 +30,35 @@ declare global {
   }
 }
 
-function AA() {
+function AAWithPM() {
   const [addressInfo, setAddressInfo] = useState<IAddressComponentProps[]>([]);
   const [publicClient, setPublicClient] = useState<PublicClient>();
   const [nexusClient, setNexusClient] = useState<NexusClient>();
-  const [loading,setLoading] = useState({
-    connectState:false,
-    getBalanceState:false,
-    sendState:false,
+  const [loading, setLoading] = useState({
+    connectState: false,
+    getBalanceState: false,
+    sendState: false,
   })
 
   const connect = async () => {
     try {
-      setLoading({...loading,connectState:true})
-  
+      setLoading({ ...loading, connectState: true })
+
       const addresses = await metamask_requestAccounts();
       const accountAddress = addresses[0] as `0x${string}`;
-  
+
       // Create Client
       const client = createPublicClient({
         transport: custom(window.ethereum),
       });
       setPublicClient(client);
-  
+
       // Create Wallet
       const walletClient = createWalletClient({
         transport: custom(window.ethereum),
         account: accountAddress,
       });
-  
+
       // Create Nexus Client
       const _nexusClient = createSmartAccountClient({
         account: await toNexusAccount({
@@ -63,16 +67,17 @@ function AA() {
           transport: http(),
         }),
         transport: http(BUNDLER_URL),
+        paymaster: createBicoPaymasterClient({ paymasterUrl: PAYMASTER_URL }),
       });
       setNexusClient(_nexusClient);
-  
-  
+
+
       // getBalance
       const smartAccountBalance = await client.getBalance({
         address: _nexusClient.account.address,
       });
       const EOABalance = await client.getBalance({ address: accountAddress });
-  
+      const PMBalance = await getPaymasterBalance()
       setAddressInfo([
         {
           address: accountAddress,
@@ -84,50 +89,93 @@ function AA() {
           balance: formatEther(smartAccountBalance),
           tag: "AA",
         },
+        {
+          address: BICONOMY_PAYMASTER_DEPOSIT_ADDRESS,
+          balance: formatEther(PMBalance!),
+          tag: "PM",
+        },
       ]);
-      
+
     } catch (error) {
       alert(error)
-      setLoading({...loading,connectState:false})
+      setLoading({ ...loading, connectState: false })
     } finally {
-      setLoading({...loading,connectState:false})
+      setLoading({ ...loading, connectState: false })
     }
   };
 
   const getBalance = async () => {
     try {
-      setLoading({...loading,getBalanceState:true})
+      setLoading({ ...loading, getBalanceState: true })
       if (!publicClient) {
         return;
       }
-      const updatedInfo = await Promise.all(
-        addressInfo.map(async (item) => {
-          const balance = await publicClient.getBalance({
-            address: item.address as `0x${string}`,
-          });
-          return {
-            ...item,
-            balance: formatEther(balance),
-          };
-        })
-      );
-      setAddressInfo([...updatedInfo]);
+
+
+      const EOABalance = await publicClient.getBalance({ address: addressInfo[0].address });
+      const smartAccountBalance = await publicClient.getBalance({
+        address: addressInfo[1].address,
+      });
+      const PMBalance = await getPaymasterBalance()
+
+
+      setAddressInfo([
+        {
+          address: addressInfo[0].address,
+          balance: formatEther(EOABalance),
+          tag: "EOA",
+        },
+        {
+          address: addressInfo[1].address,
+          balance: formatEther(smartAccountBalance),
+          tag: "AA",
+        },
+        {
+          address: BICONOMY_PAYMASTER_DEPOSIT_ADDRESS,
+          balance: formatEther(PMBalance!),
+          tag: "PM",
+        },
+      ]);
+
     } catch (error) {
       alert(error)
-      setLoading({...loading,getBalanceState:false})
+      setLoading({ ...loading, getBalanceState: false })
     } finally {
-      setLoading({...loading,getBalanceState:false})
+      setLoading({ ...loading, getBalanceState: false })
     }
   };
 
+
+  const getPaymasterBalance = async () => {
+    if (!publicClient) {
+      return;
+    }
+    const abi = parseAbi(['function getBalance(address) view returns (uint256)'])
+
+    const result = await publicClient.call({
+      to: BICONOMY_PAYMASTER_ADDRESS,
+      data: encodeFunctionData({
+        abi,
+        functionName: "getBalance",
+        args: [BICONOMY_PAYMASTER_DEPOSIT_ADDRESS]
+      })
+    })
+
+    return decodeFunctionResult({
+      abi,
+      functionName: 'getBalance',
+      data: result.data!,
+    }) as bigint;
+  }
+
   const sendTransaction = async () => {
     try {
-      setLoading({...loading,sendState:true})
+      setLoading({ ...loading, sendState: true })
 
       if (!nexusClient) {
         return;
       }
-  
+
       const hash = await nexusClient.sendUserOperation({
         calls: [
           {
@@ -141,20 +189,21 @@ function AA() {
       console.log("Transaction receipt: ", receipt);
     } catch (error) {
       alert(error)
-      setLoading({...loading,sendState:false})
+      setLoading({ ...loading, sendState: false })
     } finally {
-      setLoading({...loading,sendState:false})
+      setLoading({ ...loading, sendState: false })
     }
   };
+
   return (
     <>
       <div>
-        <button onClick={connect}>{loading.connectState ? <CircularIndeterminate/> : "connect metamask"}</button>
+        <button onClick={connect}>{loading.connectState ? <CircularIndeterminate /> : "connect metamask"}</button>
         <button disabled={addressInfo.length == 0} onClick={getBalance}>
-        {loading.getBalanceState ? <CircularIndeterminate/> : "getBalance"}
+          {loading.getBalanceState ? <CircularIndeterminate /> : "getBalance"}
         </button>
         <button disabled={addressInfo.length == 0} onClick={sendTransaction}>
-        {loading.sendState ? <CircularIndeterminate/> : "sendTransaction"}
+          {loading.sendState ? <CircularIndeterminate /> : "sendTransaction"}
         </button>
       </div>
       <div>
@@ -168,4 +217,4 @@ function AA() {
   );
 }
 
-export default AA;
+export default AAWithPM;

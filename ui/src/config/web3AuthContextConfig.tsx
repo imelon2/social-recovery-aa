@@ -19,7 +19,8 @@ const chainConfig = {
 const web3AuthOptions: Web3AuthOptions = {
   clientId: web3AuthClientId, // Get your Client ID from Web3Auth Dashboard
   web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET, // or WEB3AUTH_NETWORK.SAPPHIRE_DEVNET
-  chains:[chainConfig]
+  chains:[chainConfig],
+  defaultChainId:"0x66eee"
 };
   
 const web3AuthContextConfig: Web3AuthContextConfig = {

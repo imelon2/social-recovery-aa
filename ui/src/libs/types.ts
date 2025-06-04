@@ -1,5 +1,7 @@
+import { Address } from "viem";
+
 export type IAddressComponentProps = {
-  address: string;
+  address: Address;
   balance: string;
   tag: string;
 };

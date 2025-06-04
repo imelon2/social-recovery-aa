@@ -1,1 +1,5 @@
 export const BUNDLER_URL = "https://bundler.biconomy.io/api/v3/421614/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44"; 
+export const PAYMASTER_URL = "https://paymaster.biconomy.io/api/v2/421614/mHRuF2gx0.d6ed6090-b6f7-480c-8639-9178335cad17";
+
+export const BICONOMY_PAYMASTER_ADDRESS = "0x00000072a5F551D6E80b2f6ad4fB256A27841Bbc"
+export const BICONOMY_PAYMASTER_DEPOSIT_ADDRESS = "0xd644352A429F3fF3d21128820DcBC53e063685b1"
